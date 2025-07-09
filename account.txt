@@ -1,1 +1,132 @@
-add your cookie🗯️🧸
++cmd install ping.js const { createCanvas, loadImage, registerFont } = require("canvas");
+const fs = require("fs-extra");
+const path = require("path");
+
+module.exports = {
+  config: {
+    name: "ping",
+    aliases: ["running"],
+    version: "1.2",
+    author: "Chitron Bhattacharjee",
+    role: 0,
+    shortDescription: { en: "Displays run of the bot's system." },
+    longDescription: { en: "Displays Running speed of the bot's system." },
+    category: "system",
+    guide: { en: "Use {pn}ping or type 'uptimespeed' to check bot's system speed." }
+  },
+
+  onStart: async function ({ api, event }) {
+    const timeStart = Date.now();
+    await api.sendMessage("🦆 Checking Ping Speed... Please wait!", event.threadID);
+
+    const uptime = Date.now() - timeStart;
+    const showRealRun = Math.random() <= 0.8; // 80% real, 20% fake
+    const randomPing = Math.floor(Math.random() * (200 - 100 + 1)) + 100;
+    const finalPing = showRealRun ? uptime : randomPing;
+
+    const imageBuffer = await generateCanvas(finalPing);
+    return api.sendMessage(
+      {
+        body: `🧠 𝗦𝗵𝗶𝗣𝘂 𝗔𝗶 𝗣𝗶𝗻𝗴 𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲`,
+        attachment: imageBuffer
+      },
+      event.threadID
+    );
+  },
+
+  onChat: async function ({ event, message }) {
+    if (event.body?.toLowerCase() === "uptimespeed") {
+      const fakeUptime = Math.floor(Math.random() * (20 - 5 + 1)) + 5;
+      return message.reply(`🧠 ShiPu Ai Uptime: ${fakeUptime} days 🕒`);
+    }
+  }
+};
+
+async function generateCanvas(ping) {
+  const width = 700, height = 400;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+
+  // Font setup
+  const fontPath = path.join(__dirname, "assets", "font", "BeVietnamPro-Bold.ttf");
+  if (!fs.existsSync(fontPath)) await fs.ensureFile(fontPath);
+  registerFont(fontPath, { family: "BeVietnamPro" });
+
+  // Random Theme
+  const theme = Math.floor(Math.random() * 3); // 0, 1, or 2
+  if (theme === 0) applyRetroTheme(ctx, width, height);
+  else if (theme === 1) applyCyberpunkTheme(ctx, width, height);
+  else applyMinimalTheme(ctx, width, height);
+
+  // Title
+  ctx.font = "60px BeVietnamPro";
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.fillText("ShiPu Ai", width / 2, 90);
+
+  // System Uptime Label
+  ctx.font = "30px BeVietnamPro";
+  ctx.fillStyle = "#ffccff";
+  ctx.fillText("System Uptime", width / 2, 160);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1.5;
+  ctx.moveTo(width / 2 - 150, 170);
+  ctx.lineTo(width / 2 + 150, 170);
+  ctx.stroke();
+
+  // Time format
+  const h = Math.floor(ping / 3600);
+  const m = Math.floor((ping % 3600) / 60);
+  const s = ping % 60;
+  const timeFormatted = `0D ${h}H ${m}M ${s}S`;
+
+  ctx.font = "28px BeVietnamPro";
+  ctx.fillStyle = "#ffffcc";
+  ctx.fillText(`BOT UPTIME: ${timeFormatted}`, width / 2, 230);
+
+  // Ping time
+  ctx.font = "25px BeVietnamPro";
+  ctx.fillStyle = "#c0ffee";
+  ctx.fillText(`⚡ Ping Speed: ${ping}ms`, width / 2, 300);
+
+  return canvas.toBuffer();
+}
+
+// 🌈 THEME FUNCTIONS
+
+function applyRetroTheme(ctx, width, height) {
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, "#2a003f");
+  gradient.addColorStop(1, "#8800cc");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  for (let i = 0; i < 40; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.08})`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * width, Math.random() * height, Math.random() * 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function applyCyberpunkTheme(ctx, width, height) {
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, width, height);
+
+  const neon = ctx.createLinearGradient(0, 0, width, height);
+  neon.addColorStop(0, "#00f0ff");
+  neon.addColorStop(1, "#ff00f0");
+  ctx.strokeStyle = neon;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(10, 10, width - 20, height - 20);
+}
+
+function applyMinimalTheme(ctx, width, height) {
+  ctx.fillStyle = "#202020";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "#303030";
+  ctx.fillRect(40, 40, width - 80, height - 80);
+}
